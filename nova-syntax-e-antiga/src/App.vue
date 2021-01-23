@@ -10,10 +10,10 @@
       type="text"
       @keyup.enter="addTask"
       v-focus 
-      v-model="currentTask">
+      v-model="state.currentTask">
 
-    <ul v-if="showList">
-      <li v-for="(task, index) in tasks"
+    <ul v-if="state.showList">
+      <li v-for="(task, index) in state.tasks"
       @dblclick="complete(task)"
       :key="`${task}-${index}`"
       class="task-item"
@@ -38,40 +38,49 @@ const focus = {
     el.focus()
   }
 }
+
 export default {
   directives: {
     focus
   },
- data: () => ({
-   currentTask: '',
-   showList: false,
-   tasks: [
-     {name: 'Fazer o curso', isDone: false}
-   ]
- }),
- methods: {
-   complete (task) {
-    this.tasks = this.tasks.map(t => { 
+  setup () {
+    const state = reactive({
+      currentTask: '',
+      showList: false,
+      tasks: [
+        { name: 'Fazer o curso', isDone: false }
+      ]
+    })
+
+    function handleShowHideList () {
+     state.showList = !state.showList
+   }
+    function remove (task) {
+     state.tasks = state.tasks.filter(t => t.name !== task.name)
+   }
+    function addTask () {
+     state.tasks.push({ 
+       name: state.currentTask,
+       isDone: false
+     })
+     state.currentTask = ''
+   }
+    function complete (task) {
+    state.tasks = state.tasks.map(t => { 
       if (t.name === task.name) {
         return { ...t, isDone: !t.isDone }
       }
       return {...t}
     })
-   },
-   handleShowHideList () {
-     this.showList = !this.showList
-   },
-   remove (task) {
-     this.tasks = this.tasks.filter(t => t.name !== task.name)
-   },
-   addTask () {
-     this.tasks.push({ 
-       name: this.currentTask,
-       isDone: false
-     })
-     this.currentTask = ''
-   },
- }
+   }
+    return {
+      state,
+      handleShowHideList,
+      remove,
+      addTask,
+      complete,
+    }
+  }
 }
 </script>
 
